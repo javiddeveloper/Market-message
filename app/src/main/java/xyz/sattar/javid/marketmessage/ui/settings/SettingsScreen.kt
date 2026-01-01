@@ -7,6 +7,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import xyz.sattar.javid.marketmessage.ui.theme.MarketMessageTheme
 
 @Composable
 fun SettingsScreen() {
@@ -15,5 +17,13 @@ fun SettingsScreen() {
         contentAlignment = Alignment.Center
     ) {
         Text(text = "تنظیمات", style = MaterialTheme.typography.headlineMedium)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreview() {
+    MarketMessageTheme {
+        SettingsScreen()
     }
 }
