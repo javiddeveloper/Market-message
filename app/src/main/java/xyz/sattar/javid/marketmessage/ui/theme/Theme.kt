@@ -14,33 +14,40 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val LightColorScheme = lightColorScheme(
+    primary = PrimaryGreen,
+    onPrimary = White,
+    primaryContainer = LightGreen,
+    onPrimaryContainer = DarkGreen,
+    secondary = SecondaryTeal,
+    onSecondary = White,
+    secondaryContainer = SecondaryDark,
+    background = Gray100,
+    onBackground = Gray900,
+    surface = White,
+    onSurface = Gray900,
+    error = ErrorRed,
+    onError = White
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+// For now, we use the same palette for dark mode or a slightly tweaked one if needed.
+// Usually, dark mode needs desaturated colors. Let's define a basic dark one.
+private val DarkColorScheme = darkColorScheme(
+    primary = PrimaryGreen, // Keep brand color or desaturate to 0xFF4CAF50
+    onPrimary = White,
+    primaryContainer = DarkGreen,
+    onPrimaryContainer = LightGreen,
+    background = Black,
+    onBackground = White,
+    surface = Gray900,
+    onSurface = White
 )
 
 @Composable
 fun MarketMessageTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Disable dynamic color to enforce brand theme
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -48,10 +55,10 @@ fun MarketMessageTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         MaterialTheme(
             colorScheme = colorScheme,
