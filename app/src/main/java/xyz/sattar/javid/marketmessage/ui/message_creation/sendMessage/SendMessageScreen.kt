@@ -1,4 +1,4 @@
-package xyz.sattar.javid.marketmessage.ui.message_creation
+package xyz.sattar.javid.marketmessage.ui.message_creation.sendMessage
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,34 +19,55 @@ import androidx.compose.ui.unit.dp
 import xyz.sattar.javid.marketmessage.ui.components.AppButton
 import xyz.sattar.javid.marketmessage.ui.components.AppToolbar
 import xyz.sattar.javid.marketmessage.ui.theme.MarketMessageTheme
+import xyz.sattar.javid.marketmessage.utils.collectWithLifecycleAware
 
 @Composable
 fun SendMessageScreen(
-    viewModel: MessageCreationViewModel,
-    onFinish: () -> Unit
+    viewModel: SendMessageViewModel,
+    onFinish: () -> Unit,
+    onBack: () -> Unit
 ) {
-    val messageBody by viewModel.messageBody.collectAsState()
-    val selectedContacts by viewModel.selectedContacts.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+
+    HandleEvents(viewModel, onBack, onFinish)
 
     SendMessageContent(
-        messageBody = messageBody,
-        contactCount = selectedContacts.size,
+        messageBody = uiState.messageBody,
+        contactCount = uiState.contactCount,
         onSend = {
-            viewModel.clearData()
-            onFinish()
-        }
+            viewModel.sendIntent(SendMessageIntent.SendMessage)
+        },
+        onBackClick = { viewModel.sendIntent(SendMessageIntent.GoBack) }
     )
+}
+
+@Composable
+private fun HandleEvents(
+    viewModel: SendMessageViewModel,
+    onBack: () -> Unit,
+    onFinish: () -> Unit
+) {
+    viewModel.events.collectWithLifecycleAware { event ->
+        when (event) {
+            is SendMessageEvent.NavigateBack -> onBack()
+            is SendMessageEvent.MessageSent -> onFinish()
+        }
+    }
 }
 
 @Composable
 fun SendMessageContent(
     messageBody: String,
     contactCount: Int,
-    onSend: () -> Unit
+    onSend: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            AppToolbar(title = "ارسال نهایی")
+            AppToolbar(
+                title = "ارسال نهایی",
+                onBackClick = onBackClick
+            )
         }
     ) { innerPadding ->
         Column(
@@ -86,7 +107,8 @@ fun SendMessageContentPreview() {
         SendMessageContent(
             messageBody = "سلام، این یک پیام آزمایشی است.",
             contactCount = 5,
-            onSend = {}
+            onSend = {},
+            onBackClick = {}
         )
     }
 }

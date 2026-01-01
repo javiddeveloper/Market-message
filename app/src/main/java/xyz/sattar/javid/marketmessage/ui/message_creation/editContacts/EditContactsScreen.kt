@@ -1,4 +1,4 @@
-package xyz.sattar.javid.marketmessage.ui.message_creation
+package xyz.sattar.javid.marketmessage.ui.message_creation.editContacts
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,30 +24,53 @@ import androidx.compose.ui.unit.dp
 import xyz.sattar.javid.marketmessage.ui.components.AppButton
 import xyz.sattar.javid.marketmessage.ui.components.AppToolbar
 import xyz.sattar.javid.marketmessage.ui.theme.MarketMessageTheme
+import xyz.sattar.javid.marketmessage.utils.collectWithLifecycleAware
 
 @Composable
 fun EditContactsScreen(
-    viewModel: MessageCreationViewModel,
-    onNext: () -> Unit
+    viewModel: EditContactsViewModel,
+    onNext: () -> Unit,
+    onBack: () -> Unit
 ) {
-    val selectedContacts by viewModel.selectedContacts.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+
+    HandleEvents(viewModel, onNext, onBack)
 
     EditContactsContent(
-        selectedContacts = selectedContacts,
-        onContactToggle = { contact -> viewModel.toggleContactSelection(contact) },
-        onNext = onNext
+        selectedContacts = uiState.selectedContacts,
+        onContactToggle = { contact -> viewModel.sendIntent(EditContactsIntent.RemoveContact(contact)) },
+        onNext = { viewModel.sendIntent(EditContactsIntent.GoToSend) },
+        onBackClick = { viewModel.sendIntent(EditContactsIntent.GoBack) }
     )
+}
+
+@Composable
+private fun HandleEvents(
+    viewModel: EditContactsViewModel,
+    onNext: () -> Unit,
+    onBack: () -> Unit
+) {
+    viewModel.events.collectWithLifecycleAware { event ->
+        when (event) {
+            is EditContactsEvent.NavigateToSend -> onNext()
+            is EditContactsEvent.NavigateBack -> onBack()
+        }
+    }
 }
 
 @Composable
 fun EditContactsContent(
     selectedContacts: List<String>,
     onContactToggle: (String) -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            AppToolbar(title = "ویرایش مخاطبین")
+            AppToolbar(
+                title = "ویرایش مخاطبین",
+                onBackClick = onBackClick
+            )
         }
     ) { innerPadding ->
         Column(
@@ -95,7 +118,8 @@ fun EditContactsContentPreview() {
         EditContactsContent(
             selectedContacts = listOf("علی", "رضا", "مریم"),
             onContactToggle = {},
-            onNext = {}
+            onNext = {},
+            onBackClick = {}
         )
     }
 }
