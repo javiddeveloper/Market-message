@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import xyz.sattar.javid.marketmessage.data.local.AppDatabase
 import xyz.sattar.javid.marketmessage.data.local.dao.CustomerDao
 import xyz.sattar.javid.marketmessage.data.local.dao.MessageDao
+import xyz.sattar.javid.marketmessage.data.local.dao.ReadyMessageDao
 import javax.inject.Singleton
 
 @Module
@@ -36,5 +37,10 @@ object DatabaseModule {
     @Provides
     fun provideCustomerDao(database: AppDatabase): CustomerDao {
         return database.customerDao()
+    }
+
+    @Provides
+    fun provideReadyMessageDao(database: AppDatabase): ReadyMessageDao {
+        return database.readyMessageDao()
     }
 }

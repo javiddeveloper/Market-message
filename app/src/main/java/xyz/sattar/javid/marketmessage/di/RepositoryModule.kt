@@ -6,8 +6,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import xyz.sattar.javid.marketmessage.data.repository.CustomerRepositoryImpl
 import xyz.sattar.javid.marketmessage.data.repository.MessageRepositoryImpl
+import xyz.sattar.javid.marketmessage.data.repository.ReadyMessageRepositoryImpl
 import xyz.sattar.javid.marketmessage.domain.repository.CustomerRepository
 import xyz.sattar.javid.marketmessage.domain.repository.MessageRepository
+import xyz.sattar.javid.marketmessage.domain.repository.ReadyMessageRepository
 import javax.inject.Singleton
 
 @Module
@@ -25,4 +27,10 @@ abstract class RepositoryModule {
     abstract fun bindCustomerRepository(
         customerRepositoryImpl: CustomerRepositoryImpl
     ): CustomerRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindReadyMessageRepository(
+        readyMessageRepositoryImpl: ReadyMessageRepositoryImpl
+    ): ReadyMessageRepository
 }
