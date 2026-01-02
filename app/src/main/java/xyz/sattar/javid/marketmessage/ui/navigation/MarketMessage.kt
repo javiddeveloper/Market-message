@@ -3,6 +3,7 @@ package xyz.sattar.javid.marketmessage.ui.navigation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -43,6 +44,7 @@ fun MarketMessageApp() {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             AnimatedVisibility(
                 visible = showBottomBar,
@@ -79,7 +81,7 @@ fun MarketMessageApp() {
         NavHost(
             navController = navController,
             startDestination = Screen.Home,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
         ) {
             composable<Screen.Home> {
                 HomeScreen(
@@ -100,9 +102,9 @@ fun MarketMessageApp() {
 enum class AppDestinations(
     val label: String,
     val icon: ImageVector,
-    val screen: Screen,
+    val screen: Screen
 ) {
-    HOME("خانه", Icons.Default.Home, Screen.Home),
-    MESSAGES("مدیریت پیام‌ها", Icons.Default.Email, Screen.Messages),
-    SETTINGS("تنظیمات", Icons.Default.Settings, Screen.Settings),
+    Home("خانه", Icons.Default.Home, Screen.Home),
+    Messages("پیام‌ها", Icons.Default.Email, Screen.Messages),
+    Settings("تنظیمات", Icons.Default.Settings, Screen.Settings)
 }
