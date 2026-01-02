@@ -25,27 +25,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import xyz.sattar.javid.marketmessage.domain.model.ReadyMessage
 
+import xyz.sattar.javid.marketmessage.ui.components.AppCard
+import xyz.sattar.javid.marketmessage.ui.components.AppCardType
+
 @Composable
 fun ReadyMessageItem(
     readyMessage: ReadyMessage,
-    onMessageClick: (String) -> Unit,
+    onMessageClick: (ReadyMessage) -> Unit,
     onDeleteClick: (Long) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Card(
+    AppCard(
+        type = AppCardType.SURFACE,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { onMessageClick(readyMessage.content) },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            .clickable { onMessageClick(readyMessage) }
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(

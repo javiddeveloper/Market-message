@@ -1,5 +1,6 @@
 package xyz.sattar.javid.marketmessage.ui.message_creation.createMessage
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -46,10 +47,8 @@ fun CreateMessageScreen(
         onDeleteReadyMessage = { id ->
             viewModel.sendIntent(CreateMessageIntent.DeleteReadyMessage(id))
         },
-        onMessageClick = { content ->
-            
-            //todo pass message id
-            onNext()
+        onMessageClick = { message ->
+            viewModel.sendIntent(CreateMessageIntent.SelectMessage(message.id, message.content))
         },
         onBackClick = onBack
     )
@@ -74,7 +73,7 @@ fun CreateMessageContent(
     uiState: CreateMessageState,
     onAddReadyMessage: (String) -> Unit,
     onDeleteReadyMessage: (Long) -> Unit,
-    onMessageClick: (String) -> Unit,
+    onMessageClick: (ReadyMessage) -> Unit,
     onBackClick: () -> Unit
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -106,11 +105,15 @@ fun CreateMessageContent(
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.bodyLarge
                 )
+
+// ...
+
             } else {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(uiState.readyMessages) { message ->
                         ReadyMessageItem(
@@ -134,7 +137,7 @@ fun CreateMessageContent(
 
 @Preview(showBackground = true)
 @Composable
-fun CreateMessageContentPreview() {
+private fun CreateMessageContentPreview() {
     MarketMessageTheme {
         CreateMessageContent(
             uiState = CreateMessageState(
