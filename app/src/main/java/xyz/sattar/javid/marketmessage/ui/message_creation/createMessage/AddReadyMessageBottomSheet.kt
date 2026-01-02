@@ -1,5 +1,6 @@
 package xyz.sattar.javid.marketmessage.ui.message_creation.createMessage
 
+import android.graphics.drawable.Icon
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -102,21 +103,6 @@ fun AddReadyMessageBottomSheet(
 
             // Message Input with Clear Button
             Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    if (messageContent.isNotEmpty()) {
-                        TextButton(
-                            onClick = { messageContent = "" },
-                            content = {
-                                Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("پاک کردن متن", color = MaterialTheme.colorScheme.error)
-                            }
-                        )
-                    }
-                }
                 
                 AppTextField(
                     value = messageContent,
@@ -125,7 +111,8 @@ fun AddReadyMessageBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp), // Approximate 3 lines height
-                    maxLines = 5
+                    maxLines = 5,
+
                 )
             }
 

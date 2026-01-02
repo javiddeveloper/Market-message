@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -65,10 +66,17 @@ fun ReadyMessageItem(
                     onDismissRequest = { expanded = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("حذف") },
+                        text = { Text("حذف", color = MaterialTheme.colorScheme.error) },
                         onClick = {
                             expanded = false
                             onDeleteClick(readyMessage.id)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
                         }
                     )
                 }

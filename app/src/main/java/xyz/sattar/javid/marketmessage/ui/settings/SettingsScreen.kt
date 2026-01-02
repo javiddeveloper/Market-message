@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Card
@@ -138,6 +139,7 @@ fun SettingsScreen(
                                 AppThemeMode.DARK -> "تاریک"
                                 AppThemeMode.SYSTEM -> "پیش‌فرض سیستم"
                             },
+                            showDivider = false,
                             onClick = { showThemeSheet = true }
                         )
                     }
@@ -151,15 +153,15 @@ fun SettingsScreen(
                     ) {
                         SettingsItem(
                             icon = Icons.Default.Info,
-                            title = "درباره ما",
-                            subtitle = "ارتباط با توسعه‌دهنده",
+                            title = "تماس با ما",
+                            subtitle = "اطلاعات بیشتر",
                             onClick = { showContactSheet = true },
                             showDivider = false
                         )
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
@@ -182,7 +184,7 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-                
+
                 ThemeOption(
                     title = "روشن",
                     selected = uiState.themeMode == AppThemeMode.LIGHT,
@@ -324,7 +326,7 @@ fun SettingsItem(
                 }
             }
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                imageVector = Icons.Default.ChevronLeft,
                 contentDescription = null,
                 modifier = Modifier.width(16.dp),
                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)

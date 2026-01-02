@@ -19,9 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ScheduleSend
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -152,7 +157,7 @@ fun SendMessageScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Send, contentDescription = "ارسال برای همه")
+                Icon(Icons.Default.Speed, contentDescription = "ارسال برای همه")
             }
         }
     ) { innerPadding ->
@@ -254,7 +259,7 @@ fun MessageItem(
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Icon(
-                imageVector = if (isSent) Icons.Default.Check else Icons.Default.DateRange,
+                imageVector = if (isSent) Icons.Default.Check else Icons.Default.Schedule,
                 contentDescription = null,
                 tint = if (isSent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
