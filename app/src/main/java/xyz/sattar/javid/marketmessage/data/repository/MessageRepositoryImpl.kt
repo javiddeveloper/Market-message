@@ -97,4 +97,38 @@ class MessageRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override fun getAllCustomerStatsPaged(): Flow<PagingData<xyz.sattar.javid.marketmessage.domain.model.CustomerStats>> {
+        return Pager(
+            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+            pagingSourceFactory = { messageDao.getAllCustomerStatsPaged() }
+        ).flow.map { pagingData ->
+            pagingData.map { entity ->
+                xyz.sattar.javid.marketmessage.domain.model.CustomerStats(
+                    customer = entity.customer.toDomain(),
+                    messageCount = entity.messageCount
+                )
+            }
+        }
+    }
+
+    override fun getRecentUniqueMessagesPaged(): Flow<PagingData<xyz.sattar.javid.marketmessage.domain.model.RecentMessageStat>> {
+        return Pager(
+            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+            pagingSourceFactory = { messageDao.getRecentUniqueMessagesPaged() }
+        ).flow.map { pagingData ->
+            pagingData.map { entity ->
+                xyz.sattar.javid.marketmessage.domain.model.RecentMessageStat(
+                    messageType = entity.messageType,
+                    content = entity.content,
+                    count = entity.count,
+                    lastSent = entity.lastSent
+                )
+            }
+        }
+    }
+
+    override suspend fun deleteMessagesForCustomer(customerId: Long) {
+        messageDao.deleteMessagesForCustomer(customerId)
+    }
 }

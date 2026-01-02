@@ -7,10 +7,10 @@ import androidx.paging.map
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import xyz.sattar.javid.marketmessage.data.local.dao.CustomerDao
+import xyz.sattar.javid.marketmessage.data.local.entity.CustomerEntity
 import xyz.sattar.javid.marketmessage.domain.model.Customer
 import xyz.sattar.javid.marketmessage.domain.repository.CustomerRepository
 import javax.inject.Inject
-import xyz.sattar.javid.marketmessage.data.local.entity.CustomerEntity
 
 class CustomerRepositoryImpl @Inject constructor(
     private val customerDao: CustomerDao
@@ -40,5 +40,9 @@ class CustomerRepositoryImpl @Inject constructor(
 
     override suspend fun getCustomerByPhoneNumber(phoneNumber: String): Customer? {
         return customerDao.getCustomerByPhoneNumber(phoneNumber)?.toDomain()
+    }
+
+    override suspend fun deleteCustomer(customer: Customer) {
+        customerDao.deleteCustomer(CustomerEntity.fromDomain(customer))
     }
 }

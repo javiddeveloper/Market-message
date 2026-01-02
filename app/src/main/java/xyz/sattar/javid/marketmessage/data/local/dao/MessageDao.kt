@@ -7,6 +7,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import xyz.sattar.javid.marketmessage.data.local.entity.MessageEntity
+import xyz.sattar.javid.marketmessage.data.local.model.CustomerMessageCount
+import xyz.sattar.javid.marketmessage.data.local.model.MessageTypeCount
+import xyz.sattar.javid.marketmessage.data.local.model.RecentMessageCount
 
 @Dao
 interface MessageDao {
@@ -25,15 +28,24 @@ interface MessageDao {
     @Query("DELETE FROM messages")
     suspend fun clearAllMessages()
 
+    @Query("DELETE FROM messages WHERE customerId = :customerId")
+    suspend fun deleteMessagesForCustomer(customerId: Long)
+
     @Query("SELECT messageType, COUNT(*) as count FROM messages GROUP BY messageType ORDER BY count DESC LIMIT 1")
-    fun getMostFrequentMessageType(): Flow<xyz.sattar.javid.marketmessage.data.local.model.MessageTypeCount?>
+    fun getMostFrequentMessageType(): Flow<MessageTypeCount?>
 
     @Query("SELECT * FROM messages ORDER BY sentAt DESC LIMIT :limit")
     fun getLastMessages(limit: Int): Flow<List<MessageEntity>>
 
     @Query("SELECT messageType, content, COUNT(*) as count, MAX(sentAt) as lastSent FROM messages GROUP BY messageType, content ORDER BY lastSent DESC LIMIT :limit")
-    fun getRecentUniqueMessages(limit: Int): Flow<List<xyz.sattar.javid.marketmessage.data.local.model.RecentMessageCount>>
+    fun getRecentUniqueMessages(limit: Int): Flow<List<RecentMessageCount>>
+
+    @Query("SELECT messageType, content, COUNT(*) as count, MAX(sentAt) as lastSent FROM messages GROUP BY messageType, content ORDER BY lastSent DESC")
+    fun getRecentUniqueMessagesPaged(): PagingSource<Int, RecentMessageCount>
 
     @Query("SELECT c.*, COUNT(m.id) as messageCount FROM customers c JOIN messages m ON c.id = m.customerId GROUP BY c.id ORDER BY messageCount DESC LIMIT :limit")
-    fun getTopFrequentContacts(limit: Int): Flow<List<xyz.sattar.javid.marketmessage.data.local.model.CustomerMessageCount>>
+    fun getTopFrequentContacts(limit: Int): Flow<List<CustomerMessageCount>>
+
+    @Query("SELECT c.*, COUNT(m.id) as messageCount FROM customers c JOIN messages m ON c.id = m.customerId GROUP BY c.id ORDER BY messageCount DESC")
+    fun getAllCustomerStatsPaged(): PagingSource<Int, CustomerMessageCount>
 }
