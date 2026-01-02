@@ -39,7 +39,7 @@ fun MarketMessageApp() {
 
     // Check if the current destination is one of the bottom bar items
     val showBottomBar = AppDestinations.entries.any { appDest ->
-        currentDestination?.hierarchy?.any { it.route == appDest.screen::class.qualifiedName } == true
+        currentDestination?.hierarchy?.any { it.route == appDest.route } == true
     }
 
     Scaffold(
@@ -53,7 +53,7 @@ fun MarketMessageApp() {
             ) {
                 NavigationBar {
                     AppDestinations.entries.forEach { destination ->
-                        val selected = currentDestination?.hierarchy?.any { it.route == destination.screen::class.qualifiedName } == true
+                        val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
                         NavigationBarItem(
                             icon = {
                                 Icon(
@@ -63,6 +63,11 @@ fun MarketMessageApp() {
                             },
                             label = { Text(destination.label) },
                             selected = selected,
+                            colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
+                                selectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                selectedTextColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                indicatorColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer
+                            ),
                             onClick = {
                                 navController.navigate(destination.screen) {
                                     popUpTo(navController.graph.findStartDestination().id) {
@@ -90,7 +95,13 @@ fun MarketMessageApp() {
                     }
                 )
             }
-            composable<Screen.Messages> { MessagesScreen() }
+            composable<Screen.Messages> { 
+                MessagesScreen(
+                    onCreateMessageClick = {
+                        navController.navigate(Screen.MessageCreationGraph)
+                    }
+                ) 
+            }
             composable<Screen.Settings> { SettingsScreen() }
 
             // Nested Navigation Graph for Message Creation
@@ -102,9 +113,10 @@ fun MarketMessageApp() {
 enum class AppDestinations(
     val label: String,
     val icon: ImageVector,
-    val screen: Screen
+    val screen: Screen,
+    val route: String
 ) {
-    Home("خانه", Icons.Default.Home, Screen.Home),
-    Messages("پیام‌ها", Icons.Default.Email, Screen.Messages),
-    Settings("تنظیمات", Icons.Default.Settings, Screen.Settings)
+    Home("خانه", Icons.Default.Home, Screen.Home, "home"),
+    Messages("پیام‌ها", Icons.Default.Email, Screen.Messages, "messages"),
+    Settings("تنظیمات", Icons.Default.Settings, Screen.Settings, "settings")
 }
