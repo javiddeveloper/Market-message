@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GetMessagesForCustomerUseCase @Inject constructor(
     private val messageRepository: MessageRepository
 ) {
-    operator fun invoke(customerId: String): Flow<PagingData<Message>> {
+    operator fun invoke(customerId: Long): Flow<PagingData<Message>> {
         return messageRepository.getMessagesForCustomer(customerId)
     }
 }
