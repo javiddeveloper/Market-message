@@ -2,6 +2,7 @@ package xyz.sattar.javid.marketmessage.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import xyz.sattar.javid.marketmessage.data.local.MessageDraftDataHolder
+import xyz.sattar.javid.marketmessage.domain.model.DraftContact
 import xyz.sattar.javid.marketmessage.domain.repository.MessageDraftRepository
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,10 +22,14 @@ class MessageDraftRepositoryImpl @Inject constructor() : MessageDraftRepository 
         MessageDraftDataHolder.updateMessageId(id)
     }
 
-    override fun getSelectedContacts(): Flow<List<String>> = MessageDraftDataHolder.selectedContacts
+    override fun getSelectedContacts(): Flow<List<DraftContact>> = MessageDraftDataHolder.selectedContacts
 
-    override suspend fun toggleContactSelection(contact: String) {
+    override suspend fun toggleContactSelection(contact: DraftContact) {
         MessageDraftDataHolder.toggleContactSelection(contact)
+    }
+
+    override suspend fun updateContactName(phoneNumber: String, newName: String) {
+        MessageDraftDataHolder.updateContactName(phoneNumber, newName)
     }
 
     override suspend fun clearDraft() {

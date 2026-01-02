@@ -10,6 +10,7 @@ import xyz.sattar.javid.marketmessage.data.local.dao.CustomerDao
 import xyz.sattar.javid.marketmessage.domain.model.Customer
 import xyz.sattar.javid.marketmessage.domain.repository.CustomerRepository
 import javax.inject.Inject
+import xyz.sattar.javid.marketmessage.data.local.entity.CustomerEntity
 
 class CustomerRepositoryImpl @Inject constructor(
     private val customerDao: CustomerDao
@@ -31,5 +32,13 @@ class CustomerRepositoryImpl @Inject constructor(
         ).flow.map { pagingData ->
             pagingData.map { it.toDomain() }
         }
+    }
+
+    override suspend fun saveCustomer(customer: Customer) {
+        customerDao.insertCustomer(CustomerEntity.fromDomain(customer))
+    }
+
+    override suspend fun getCustomerByPhoneNumber(phoneNumber: String): Customer? {
+        return customerDao.getCustomerByPhoneNumber(phoneNumber)?.toDomain()
     }
 }
