@@ -10,19 +10,31 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import xyz.sattar.javid.marketmessage.domain.model.DraftContact
 import xyz.sattar.javid.marketmessage.ui.components.AppButton
+import xyz.sattar.javid.marketmessage.ui.components.AppCard
+import xyz.sattar.javid.marketmessage.ui.components.AppCardType
 import xyz.sattar.javid.marketmessage.ui.components.AppToolbar
+import xyz.sattar.javid.marketmessage.ui.components.utils.formatPhoneNumberForAction
 import xyz.sattar.javid.marketmessage.ui.theme.MarketMessageTheme
 import xyz.sattar.javid.marketmessage.utils.collectWithLifecycleAware
 
@@ -38,7 +50,8 @@ fun EditContactsScreen(
 
     EditContactsContent(
         selectedContacts = uiState.selectedContacts,
-        onContactToggle = { contact -> viewModel.sendIntent(EditContactsIntent.RemoveContact(contact)) },
+        onContactRemove = { contact -> viewModel.sendIntent(EditContactsIntent.RemoveContact(contact)) },
+        onContactUpdate = { contact, newName -> viewModel.sendIntent(EditContactsIntent.UpdateContactName(contact, newName)) },
         onNext = { viewModel.sendIntent(EditContactsIntent.GoToSend) },
         onBackClick = { viewModel.sendIntent(EditContactsIntent.GoBack) }
     )
@@ -58,13 +71,50 @@ private fun HandleEvents(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditContactsContent(
-    selectedContacts: List<String>,
-    onContactToggle: (String) -> Unit,
+    selectedContacts: List<DraftContact>,
+    onContactRemove: (DraftContact) -> Unit,
+    onContactUpdate: (DraftContact, String) -> Unit,
     onNext: () -> Unit,
     onBackClick: () -> Unit
 ) {
+    var editingContact by remember { mutableStateOf<DraftContact?>(null) }
+    var editedName by remember { mutableStateOf("") }
+    val sheetState = rememberModalBottomSheetState()
+
+    if (editingContact != null) {
+        ModalBottomSheet(
+            onDismissRequest = { editingContact = null },
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(text = "ویرایش نام مخاطب", style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
+                OutlinedTextField(
+                    value = editedName,
+                    onValueChange = { editedName = it },
+                    label = { Text("نام") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                AppButton(
+                    text = "ذخیره",
+                    onClick = {
+                        editingContact?.let { contact ->
+                            onContactUpdate(contact, editedName)
+                        }
+                        editingContact = null
+                    }
+                )
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             AppToolbar(
@@ -84,18 +134,35 @@ fun EditContactsContent(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(selectedContacts.toList()) { contact ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = contact)
-                        IconButton(onClick = { onContactToggle(contact) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "حذف")
+                items(selectedContacts) { contact ->
+                    AppCard(type = AppCardType.SURFACE) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = contact.name)
+                                Text(
+                                    text = formatPhoneNumberForAction(contact.phoneNumber,true),
+                                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            Row {
+                                IconButton(onClick = {
+                                    editingContact = contact
+                                    editedName = contact.name
+                                }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "ویرایش")
+                                }
+                                IconButton(onClick = { onContactRemove(contact) }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "حذف")
+                                }
+                            }
                         }
                     }
                 }
@@ -116,8 +183,13 @@ fun EditContactsContent(
 fun EditContactsContentPreview() {
     MarketMessageTheme {
         EditContactsContent(
-            selectedContacts = listOf("علی", "رضا", "مریم"),
-            onContactToggle = {},
+            selectedContacts = listOf(
+                DraftContact(name = "علی", phoneNumber = "09123456789"),
+                DraftContact(name = "رضا", phoneNumber = "09351234567"),
+                DraftContact(name = "مریم", phoneNumber = "09119876543")
+            ),
+            onContactRemove = {},
+            onContactUpdate = { _, _ -> },
             onNext = {},
             onBackClick = {}
         )

@@ -1,17 +1,19 @@
 package xyz.sattar.javid.marketmessage.ui.message_creation.editContacts
 
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import xyz.sattar.javid.marketmessage.domain.repository.MessageDraftRepository
 import xyz.sattar.javid.marketmessage.ui.components.base.BaseViewModel
 import javax.inject.Inject
 
+import kotlinx.coroutines.launch
+import xyz.sattar.javid.marketmessage.domain.usecase.SaveDraftContactsToCustomersUseCase
+
 @HiltViewModel
 class EditContactsViewModel @Inject constructor(
-    private val messageDraftRepository: MessageDraftRepository
+    private val messageDraftRepository: MessageDraftRepository,
+    private val saveDraftContactsToCustomersUseCase: SaveDraftContactsToCustomersUseCase
 ) : BaseViewModel<EditContactsState, EditContactsState.PartialState, EditContactsEvent, EditContactsIntent>(
     initialState = EditContactsState()
 ) {
@@ -33,7 +35,12 @@ class EditContactsViewModel @Inject constructor(
                     messageDraftRepository.toggleContactSelection(intent.contact)
                 }
 
+                is EditContactsIntent.UpdateContactName -> {
+                    messageDraftRepository.updateContactName(intent.contact.phoneNumber, intent.newName)
+                }
+
                 is EditContactsIntent.GoToSend -> {
+                    saveDraftContactsToCustomersUseCase()
                     sendEvent(EditContactsEvent.NavigateToSend)
                 }
 
