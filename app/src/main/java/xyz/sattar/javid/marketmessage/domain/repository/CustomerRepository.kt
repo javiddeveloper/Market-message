@@ -9,4 +9,5 @@ interface CustomerRepository {
     fun searchCustomers(query: String): Flow<PagingData<Customer>>
     suspend fun saveCustomer(customer: Customer)
     suspend fun getCustomerByPhoneNumber(phoneNumber: String): Customer?
+    suspend fun deleteCustomer(customer: Customer)
 }
