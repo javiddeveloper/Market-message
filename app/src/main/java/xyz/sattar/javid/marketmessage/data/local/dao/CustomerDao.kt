@@ -17,4 +17,7 @@ interface CustomerDao {
 
     @Query("SELECT * FROM customers WHERE fullName LIKE '%' || :query || '%' OR phoneNumber LIKE '%' || :query || '%' ORDER BY fullName ASC")
     fun searchCustomers(query: String): PagingSource<Int, CustomerEntity>
+
+    @Query("SELECT * FROM customers WHERE phoneNumber = :phoneNumber LIMIT 1")
+    suspend fun getCustomerByPhoneNumber(phoneNumber: String): CustomerEntity?
 }
