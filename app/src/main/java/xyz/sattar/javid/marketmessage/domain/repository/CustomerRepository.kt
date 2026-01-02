@@ -7,4 +7,6 @@ import xyz.sattar.javid.marketmessage.domain.model.Customer
 interface CustomerRepository {
     fun getAllCustomers(): Flow<PagingData<Customer>>
     fun searchCustomers(query: String): Flow<PagingData<Customer>>
+    suspend fun saveCustomer(customer: Customer)
+    suspend fun getCustomerByPhoneNumber(phoneNumber: String): Customer?
 }
