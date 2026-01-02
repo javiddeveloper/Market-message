@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import xyz.sattar.javid.marketmessage.domain.model.MessageVariable
 import xyz.sattar.javid.marketmessage.domain.repository.MessageDraftRepository
 import xyz.sattar.javid.marketmessage.domain.usecase.SaveDraftContactsToCustomersUseCase
 import xyz.sattar.javid.marketmessage.domain.usecase.SaveSentMessageUseCase
@@ -65,14 +66,19 @@ class SendMessageViewModel @Inject constructor(
                         }
 
                         if (smsManager != null) {
+                            val personalizedBody = MessageVariable.replaceVariables(uiState.value.messageBody) { variable ->
+                                when (variable) {
+                                    MessageVariable.NAME -> intent.contact.name
+                                }
+                            }
                             smsManager.sendTextMessage(
                                 intent.contact.phoneNumber,
                                 null,
-                                uiState.value.messageBody,
+                                personalizedBody,
                                 null,
                                 null
                             )
-                            saveSentMessageUseCase(uiState.value.messageBody, intent.contact.phoneNumber)
+                            saveSentMessageUseCase(personalizedBody, intent.contact.phoneNumber)
                             emit(SendMessageState.PartialState.SmsSent(intent.contact.phoneNumber))
                         } else {
                             emit(SendMessageState.PartialState.Error("SMS Manager not available"))
@@ -108,14 +114,19 @@ class SendMessageViewModel @Inject constructor(
                             contactsToSend.forEach { contact ->
                                 try {
                                     delay(500) // Add delay to prevent rate limiting
+                                    val personalizedBody = MessageVariable.replaceVariables(uiState.value.messageBody) { variable ->
+                                        when (variable) {
+                                            MessageVariable.NAME -> contact.name
+                                        }
+                                    }
                                     smsManager.sendTextMessage(
                                         contact.phoneNumber,
                                         null,
-                                        uiState.value.messageBody,
+                                        personalizedBody,
                                         null,
                                         null
                                     )
-                                    saveSentMessageUseCase(uiState.value.messageBody, contact.phoneNumber)
+                                    saveSentMessageUseCase(personalizedBody, contact.phoneNumber)
                                     emit(SendMessageState.PartialState.SmsSent(contact.phoneNumber))
                                 } catch (e: Exception) {
                                     // Continue sending to other contacts even if one fails

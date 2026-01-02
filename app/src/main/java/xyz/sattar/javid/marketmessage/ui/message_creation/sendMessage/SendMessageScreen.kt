@@ -2,6 +2,7 @@ package xyz.sattar.javid.marketmessage.ui.message_creation.sendMessage
 
 import android.Manifest
 import android.content.pm.PackageManager
+import xyz.sattar.javid.marketmessage.domain.model.MessageVariable
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -228,6 +229,7 @@ fun SendMessageContent(
     }
 }
 
+
 @Composable
 fun MessageItem(
     contact: DraftContact,
@@ -236,6 +238,14 @@ fun MessageItem(
     isSent: Boolean,
     onClick: () -> Unit
 ) {
+    val personalizedMessage = remember(messageBody, contact.name) {
+        MessageVariable.replaceVariables(messageBody) { variable ->
+            when (variable) {
+                MessageVariable.NAME -> contact.name
+            }
+        }
+    }
+
     AppCard(
         type = AppCardType.SURFACE,
         modifier = Modifier
@@ -271,7 +281,7 @@ fun MessageItem(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = messageBody,
+                    text = personalizedMessage,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 3
