@@ -1,8 +1,7 @@
 package xyz.sattar.javid.marketmessage.ui.components.utils
 
-fun formatPhoneNumberForAction(phone: String): String {
-    // 1. Convert Persian/Arabic digits to English digits
-    var formatted = phone
+fun formatPhoneNumberForAction(phone: String, showUI: Boolean = false): String {
+    var formatted = phone.replace(" ", "")
         .replace("۰", "0")
         .replace("۱", "1")
         .replace("۲", "2")
@@ -14,9 +13,15 @@ fun formatPhoneNumberForAction(phone: String): String {
         .replace("۸", "8")
         .replace("۹", "9")
 
-    // 2. If starts with 09, replace with +989
-    if (formatted.startsWith("09")) {
-        formatted = "+98" + formatted.substring(1)
+
+    if (showUI) {
+        if (formatted.startsWith("+989")) {
+           formatted = formatted.replace("+989","09")
+        }
+    } else {
+        if (formatted.startsWith("09")) {
+            formatted = "+98" + formatted.substring(1)
+        }
     }
 
     return formatted
