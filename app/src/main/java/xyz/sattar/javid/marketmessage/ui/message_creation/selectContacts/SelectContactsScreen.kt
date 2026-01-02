@@ -77,6 +77,7 @@ fun SelectContactsScreen(
         onSearchQueryChange = { viewModel.sendIntent(SelectContactsIntent.SearchContacts(it)) },
         onSortToggle = { viewModel.sendIntent(SelectContactsIntent.ToggleSort) },
         onContactToggle = { contact -> viewModel.sendIntent(SelectContactsIntent.ToggleContactSelection(contact)) },
+        onSelectAllToggle = { selectAll -> viewModel.sendIntent(SelectContactsIntent.ToggleSelectAll(selectAll)) },
         onNext = { viewModel.sendIntent(SelectContactsIntent.GoToEditContacts) },
         onBackClick = onBack
     )
@@ -88,6 +89,7 @@ fun SelectContactsContent(
     onSearchQueryChange: (String) -> Unit,
     onSortToggle: () -> Unit,
     onContactToggle: (DeviceContact) -> Unit,
+    onSelectAllToggle: (Boolean) -> Unit,
     onNext: () -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -103,22 +105,51 @@ fun SelectContactsContent(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Search and Sort Row
-            Row(
+            // Search Row
+            OutlinedTextField(
+                value = uiState.searchQuery,
+                onValueChange = onSearchQueryChange,
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                placeholder = { Text("جستجو...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                singleLine = true
+            )
+
+            // Toolbar: Select All & Sort
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedTextField(
-                    value = uiState.searchQuery,
-                    onValueChange = onSearchQueryChange,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    placeholder = { Text("جستجو...") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(onClick = onSortToggle) {
+                // Select All
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clickable {
+                            val allSelected = uiState.filteredContacts.isNotEmpty() && uiState.selectedContacts.containsAll(uiState.filteredContacts)
+                            onSelectAllToggle(!allSelected)
+                        }
+                        .padding(4.dp)
+                ) {
+                    Checkbox(
+                        checked = uiState.filteredContacts.isNotEmpty() && uiState.selectedContacts.containsAll(uiState.filteredContacts),
+                        onCheckedChange = { checked -> onSelectAllToggle(checked) }
+                    )
+                    Text(text = "انتخاب همه", style = MaterialTheme.typography.bodyMedium)
+                }
+
+                // Sort
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clickable { onSortToggle() }
+                        .padding(4.dp)
+                ) {
+                    Text(text = "مرتب‌سازی", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         imageVector = if (uiState.sortOrder == SortOrder.ASCENDING) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
                         contentDescription = "Sort"
@@ -134,14 +165,12 @@ fun SelectContactsContent(
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     Text("دسترسی به مخاطبین داده نشده است.")
                 }
-// ...
-
             } else {
                 LazyColumn(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                        .padding(top = 16.dp),
+                        .padding(top = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(uiState.filteredContacts) { contact ->
@@ -208,6 +237,7 @@ fun SelectContactsContentPreview() {
             onSearchQueryChange = {},
             onSortToggle = {},
             onContactToggle = {},
+            onSelectAllToggle = {},
             onNext = {},
             onBackClick = {}
         )

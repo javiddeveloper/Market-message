@@ -11,6 +11,7 @@ sealed interface SelectContactsIntent {
     data class SearchContacts(val query: String) : SelectContactsIntent
     data object ToggleSort : SelectContactsIntent
     data class ToggleContactSelection(val contact: DeviceContact) : SelectContactsIntent
+    data class ToggleSelectAll(val selectAll: Boolean) : SelectContactsIntent
     data object GoToEditContacts : SelectContactsIntent
     data object GoBack : SelectContactsIntent
 }

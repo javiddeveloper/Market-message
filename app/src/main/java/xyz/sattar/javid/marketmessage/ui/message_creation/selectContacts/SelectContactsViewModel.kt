@@ -89,6 +89,46 @@ class SelectContactsViewModel @Inject constructor(
                     emit(SelectContactsState.PartialState.SelectionUpdated(currentSelected))
                 }
 
+                is SelectContactsIntent.ToggleSelectAll -> {
+                    val currentSelected = uiState.value.selectedContacts.toMutableList()
+                    val filteredContacts = uiState.value.filteredContacts
+                    
+                    if (intent.selectAll) {
+                        // Add all filtered contacts that are not already selected
+                        filteredContacts.forEach { contact ->
+                            if (!currentSelected.contains(contact)) {
+                                currentSelected.add(contact)
+                                // Update repository
+                                val existingCustomer = getCustomerByPhoneNumberUseCase(contact.phoneNumber)
+                                val contactName = existingCustomer?.editFullName ?: contact.name
+                                messageDraftRepository.toggleContactSelection(
+                                    DraftContact(
+                                        name = contactName,
+                                        phoneNumber = contact.phoneNumber
+                                    )
+                                )
+                            }
+                        }
+                    } else {
+                        // Remove all filtered contacts that are currently selected
+                        filteredContacts.forEach { contact ->
+                            if (currentSelected.contains(contact)) {
+                                currentSelected.remove(contact)
+                                // Update repository
+                                val existingCustomer = getCustomerByPhoneNumberUseCase(contact.phoneNumber)
+                                val contactName = existingCustomer?.editFullName ?: contact.name
+                                messageDraftRepository.toggleContactSelection(
+                                    DraftContact(
+                                        name = contactName,
+                                        phoneNumber = contact.phoneNumber
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    emit(SelectContactsState.PartialState.SelectionUpdated(currentSelected))
+                }
+
                 is SelectContactsIntent.GoToEditContacts -> {
                     sendEvent(SelectContactsEvent.NavigateToEditContacts)
                 }
