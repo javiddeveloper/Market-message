@@ -1,18 +1,26 @@
 package xyz.sattar.javid.marketmessage.ui.message_creation.sendMessage
 
-import androidx.lifecycle.viewModelScope
+import android.content.Context
+import android.telephony.SmsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import xyz.sattar.javid.marketmessage.domain.repository.MessageDraftRepository
+import xyz.sattar.javid.marketmessage.domain.usecase.SaveDraftContactsToCustomersUseCase
+import xyz.sattar.javid.marketmessage.domain.usecase.SaveSentMessageUseCase
 import xyz.sattar.javid.marketmessage.ui.components.base.BaseViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class SendMessageViewModel @Inject constructor(
-    private val messageDraftRepository: MessageDraftRepository
+    private val messageDraftRepository: MessageDraftRepository,
+    private val saveSentMessageUseCase: SaveSentMessageUseCase,
+    private val saveDraftContactsToCustomersUseCase: SaveDraftContactsToCustomersUseCase,
+    @ApplicationContext private val context: Context
 ) : BaseViewModel<SendMessageState, SendMessageState.PartialState, SendMessageEvent, SendMessageIntent>(
     initialState = SendMessageState()
 ) {
@@ -25,32 +33,109 @@ class SendMessageViewModel @Inject constructor(
         flow {
             when (intent) {
                 is SendMessageIntent.LoadDraft -> {
-                    combine(
-                        messageDraftRepository.getMessageBody(),
-                        messageDraftRepository.getSelectedContacts()
-                    ) { body, contacts ->
-                        SendMessageState.PartialState.DraftLoaded(body, contacts.size)
-                    }.collect { partialState ->
-                        emit(partialState)
+                    try {
+                        saveDraftContactsToCustomersUseCase()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                    emitAll(
+                        combine(
+                            messageDraftRepository.getMessageBody(),
+                            messageDraftRepository.getSelectedContacts()
+                        ) { body, contacts ->
+                            SendMessageState.PartialState.DraftLoaded(body, contacts)
+                        }
+                    )
+                }
+
+                is SendMessageIntent.SendSingleSms -> {
+                    if (uiState.value.messageBody.isBlank()) {
+                        emit(SendMessageState.PartialState.Error("متن پیام نمی‌تواند خالی باشد"))
+                        return@flow
+                    }
+                    try {
+                        val smsManager = try {
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                                context.getSystemService(android.telephony.SmsManager::class.java)
+                            } else {
+                                SmsManager.getDefault()
+                            }
+                        } catch (e: Exception) {
+                            SmsManager.getDefault()
+                        }
+
+                        if (smsManager != null) {
+                            smsManager.sendTextMessage(
+                                intent.contact.phoneNumber,
+                                null,
+                                uiState.value.messageBody,
+                                null,
+                                null
+                            )
+                            saveSentMessageUseCase(uiState.value.messageBody, intent.contact.phoneNumber)
+                            emit(SendMessageState.PartialState.SmsSent(intent.contact.phoneNumber))
+                        } else {
+                            emit(SendMessageState.PartialState.Error("SMS Manager not available"))
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        emit(SendMessageState.PartialState.Error(e.message ?: "Failed to send SMS"))
                     }
                 }
 
-                is SendMessageIntent.SendMessage -> {
+                is SendMessageIntent.SendBulkSms -> {
+                    if (uiState.value.messageBody.isBlank()) {
+                        emit(SendMessageState.PartialState.Error("متن پیام نمی‌تواند خالی باشد"))
+                        return@flow
+                    }
                     emit(SendMessageState.PartialState.Sending(true))
                     try {
-                        // Simulate sending or call actual UseCase
-                        // For now just clear draft
-                        messageDraftRepository.clearDraft()
-                        emit(SendMessageState.PartialState.Sent) // Logic to handle "Sent" state? 
-                        // Actually BaseViewModel reducer should handle it or we emit event?
-                        // If we emit Sent partial state, reducer updates state. 
-                        // But we want to navigate away.
-                        sendEvent(SendMessageEvent.MessageSent)
+                        val smsManager = try {
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                                context.getSystemService(android.telephony.SmsManager::class.java)
+                            } else {
+                                SmsManager.getDefault()
+                            }
+                        } catch (e: Exception) {
+                            SmsManager.getDefault()
+                        }
+
+                        if (smsManager != null) {
+                            val contactsToSend = uiState.value.contacts.filter { 
+                                !uiState.value.sentPhoneNumbers.contains(it.phoneNumber) 
+                            }
+                            
+                            contactsToSend.forEach { contact ->
+                                try {
+                                    delay(500) // Add delay to prevent rate limiting
+                                    smsManager.sendTextMessage(
+                                        contact.phoneNumber,
+                                        null,
+                                        uiState.value.messageBody,
+                                        null,
+                                        null
+                                    )
+                                    saveSentMessageUseCase(uiState.value.messageBody, contact.phoneNumber)
+                                    emit(SendMessageState.PartialState.SmsSent(contact.phoneNumber))
+                                } catch (e: Exception) {
+                                    // Continue sending to other contacts even if one fails
+                                    e.printStackTrace()
+                                }
+                            }
+                        } else {
+                            emit(SendMessageState.PartialState.Error("SMS Manager not available"))
+                        }
                     } catch (e: Exception) {
-                        emit(SendMessageState.PartialState.Error(e.message ?: "Failed to send"))
+                        e.printStackTrace()
+                        emit(SendMessageState.PartialState.Error(e.message ?: "Failed to send bulk SMS"))
                     } finally {
                         emit(SendMessageState.PartialState.Sending(false))
                     }
+                }
+
+                is SendMessageIntent.GotoDashboard -> {
+                    messageDraftRepository.clearDraft()
+                    sendEvent(SendMessageEvent.NavigateDashboard)
                 }
 
                 is SendMessageIntent.GoBack -> {
@@ -66,11 +151,15 @@ class SendMessageViewModel @Inject constructor(
         return when (partialState) {
             is SendMessageState.PartialState.DraftLoaded -> currentState.copy(
                 messageBody = partialState.body,
-                contactCount = partialState.contactCount
+                contacts = partialState.contacts
             )
+
+            is SendMessageState.PartialState.SmsSent -> currentState.copy(
+                sentPhoneNumbers = currentState.sentPhoneNumbers + partialState.phoneNumber
+            )
+
             is SendMessageState.PartialState.Sending -> currentState.copy(isSending = partialState.isSending)
             is SendMessageState.PartialState.Error -> currentState.copy(error = partialState.message)
-            is SendMessageState.PartialState.Sent -> currentState // Or reset?
         }
     }
 
