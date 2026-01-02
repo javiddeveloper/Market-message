@@ -4,6 +4,7 @@ import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,13 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,7 +38,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import xyz.sattar.javid.marketmessage.domain.model.DeviceContact
 import xyz.sattar.javid.marketmessage.ui.components.AppButton
+import xyz.sattar.javid.marketmessage.ui.components.AppCard
+import xyz.sattar.javid.marketmessage.ui.components.AppCardType
 import xyz.sattar.javid.marketmessage.ui.components.AppToolbar
+import xyz.sattar.javid.marketmessage.ui.components.utils.formatPhoneNumberForAction
 import xyz.sattar.javid.marketmessage.ui.theme.MarketMessageTheme
 import xyz.sattar.javid.marketmessage.utils.collectWithLifecycleAware
 
@@ -68,7 +75,7 @@ fun SelectContactsScreen(
     SelectContactsContent(
         uiState = uiState,
         onSearchQueryChange = { viewModel.sendIntent(SelectContactsIntent.SearchContacts(it)) },
-        onSortToggle = { viewModel.sendIntent(SelectContactsIntent.ToggleSort(!uiState.isSortedByName)) },
+        onSortToggle = { viewModel.sendIntent(SelectContactsIntent.ToggleSort) },
         onContactToggle = { contact -> viewModel.sendIntent(SelectContactsIntent.ToggleContactSelection(contact)) },
         onNext = { viewModel.sendIntent(SelectContactsIntent.GoToEditContacts) },
         onBackClick = onBack
@@ -105,6 +112,7 @@ fun SelectContactsContent(
                     value = uiState.searchQuery,
                     onValueChange = onSearchQueryChange,
                     modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
                     placeholder = { Text("جستجو...") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                     singleLine = true
@@ -112,7 +120,7 @@ fun SelectContactsContent(
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = onSortToggle) {
                     Icon(
-                        imageVector = Icons.Default.List,
+                        imageVector = if (uiState.sortOrder == SortOrder.ASCENDING) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
                         contentDescription = "Sort"
                     )
                 }
@@ -126,12 +134,15 @@ fun SelectContactsContent(
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     Text("دسترسی به مخاطبین داده نشده است.")
                 }
+// ...
+
             } else {
                 LazyColumn(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                        .padding(top = 16.dp)
+                        .padding(top = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(uiState.filteredContacts) { contact ->
                         ContactItem(
@@ -153,26 +164,31 @@ fun SelectContactsContent(
     }
 }
 
+
 @Composable
 fun ContactItem(
     contact: DeviceContact,
     isSelected: Boolean,
     onToggle: () -> Unit
 ) {
-    Row(
+    AppCard(
+        type = AppCardType.SURFACE,
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onToggle() }
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(
-            checked = isSelected,
-            onCheckedChange = { onToggle() }
-        )
-        Column(modifier = Modifier.padding(start = 8.dp)) {
-            Text(text = contact.name)
-            Text(text = contact.phoneNumber, style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = isSelected,
+                onCheckedChange = { onToggle() }
+            )
+            Column(modifier = Modifier.padding(start = 8.dp)) {
+                Text(text = contact.name)
+                Text(text = formatPhoneNumberForAction(contact.phoneNumber,true), style = MaterialTheme.typography.bodySmall)
+            }
         }
     }
 }

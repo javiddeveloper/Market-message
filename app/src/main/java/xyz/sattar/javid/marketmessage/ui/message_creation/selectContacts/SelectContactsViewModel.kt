@@ -1,20 +1,21 @@
 package xyz.sattar.javid.marketmessage.ui.message_creation.selectContacts
 
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import xyz.sattar.javid.marketmessage.domain.model.DeviceContact
+import xyz.sattar.javid.marketmessage.domain.model.DraftContact
+import xyz.sattar.javid.marketmessage.domain.repository.CustomerRepository
 import xyz.sattar.javid.marketmessage.domain.repository.DeviceContactRepository
 import xyz.sattar.javid.marketmessage.domain.repository.MessageDraftRepository
+import xyz.sattar.javid.marketmessage.domain.usecase.GetCustomerByPhoneNumberUseCase
 import xyz.sattar.javid.marketmessage.ui.components.base.BaseViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class SelectContactsViewModel @Inject constructor(
     private val deviceContactRepository: DeviceContactRepository,
+    private val getCustomerByPhoneNumberUseCase: GetCustomerByPhoneNumberUseCase,
     private val messageDraftRepository: MessageDraftRepository
 ) : BaseViewModel<SelectContactsState, SelectContactsState.PartialState, SelectContactsEvent, SelectContactsIntent>(
     initialState = SelectContactsState()
@@ -36,7 +37,7 @@ class SelectContactsViewModel @Inject constructor(
                         emit(
                             SelectContactsState.PartialState.SearchQueryChanged(
                                 uiState.value.searchQuery,
-                                filterAndSort(contacts, uiState.value.searchQuery, uiState.value.isSortedByName)
+                                filterAndSort(contacts, uiState.value.searchQuery, uiState.value.sortOrder)
                             )
                         )
                         emit(SelectContactsState.PartialState.Loading(false))
@@ -47,16 +48,21 @@ class SelectContactsViewModel @Inject constructor(
                     emit(
                         SelectContactsState.PartialState.SearchQueryChanged(
                             intent.query,
-                            filterAndSort(uiState.value.contacts, intent.query, uiState.value.isSortedByName)
+                            filterAndSort(uiState.value.contacts, intent.query, uiState.value.sortOrder)
                         )
                     )
                 }
 
                 is SelectContactsIntent.ToggleSort -> {
+                    val newSortOrder = if (uiState.value.sortOrder == SortOrder.ASCENDING) {
+                        SortOrder.DESCENDING
+                    } else {
+                        SortOrder.ASCENDING
+                    }
                     emit(
                         SelectContactsState.PartialState.SortChanged(
-                            intent.sortByName,
-                            filterAndSort(uiState.value.contacts, uiState.value.searchQuery, intent.sortByName)
+                            newSortOrder,
+                            filterAndSort(uiState.value.contacts, uiState.value.searchQuery, newSortOrder)
                         )
                     )
                 }
@@ -70,7 +76,15 @@ class SelectContactsViewModel @Inject constructor(
                     }
                     
                     // Update repository
-                    messageDraftRepository.toggleContactSelection(intent.contact.phoneNumber)
+                    val existingCustomer = getCustomerByPhoneNumberUseCase(intent.contact.phoneNumber)
+                    val contactName = existingCustomer?.editFullName ?: intent.contact.name
+
+                    messageDraftRepository.toggleContactSelection(
+                        DraftContact(
+                            name = contactName,
+                            phoneNumber = intent.contact.phoneNumber
+                        )
+                    )
                     
                     emit(SelectContactsState.PartialState.SelectionUpdated(currentSelected))
                 }
@@ -88,7 +102,7 @@ class SelectContactsViewModel @Inject constructor(
     private fun filterAndSort(
         contacts: List<DeviceContact>,
         query: String,
-        sortByName: Boolean
+        sortOrder: SortOrder
     ): List<DeviceContact> {
         val filtered = if (query.isBlank()) {
             contacts
@@ -98,10 +112,10 @@ class SelectContactsViewModel @Inject constructor(
             }
         }
 
-        return if (sortByName) {
+        return if (sortOrder == SortOrder.ASCENDING) {
             filtered.sortedBy { it.name }
         } else {
-            filtered.sortedBy { it.phoneNumber }
+            filtered.sortedByDescending { it.name }
         }
     }
 
@@ -118,7 +132,7 @@ class SelectContactsViewModel @Inject constructor(
                 filteredContacts = partialState.filtered
             )
             is SelectContactsState.PartialState.SortChanged -> currentState.copy(
-                isSortedByName = partialState.isSortedByName,
+                sortOrder = partialState.sortOrder,
                 filteredContacts = partialState.filtered
             )
             is SelectContactsState.PartialState.SelectionUpdated -> currentState.copy(
