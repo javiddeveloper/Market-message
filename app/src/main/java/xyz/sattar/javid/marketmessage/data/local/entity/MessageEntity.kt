@@ -8,8 +8,7 @@ import xyz.sattar.javid.marketmessage.domain.model.Message
 data class MessageEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val userId: String,
-    val receiver: String,
+    val customerId: Long,
     val messageType: String,
     val content: String,
     val sentAt: Long
@@ -17,8 +16,7 @@ data class MessageEntity(
     fun toDomain(): Message {
         return Message(
             id = id,
-            userId = userId,
-            receiver = receiver,
+            customerId = customerId,
             messageType = messageType,
             content = content,
             sentAt = sentAt
@@ -29,8 +27,7 @@ data class MessageEntity(
         fun fromDomain(message: Message): MessageEntity {
             return MessageEntity(
                 id = message.id,
-                userId = message.userId,
-                receiver = message.receiver,
+                customerId = message.customerId,
                 messageType = message.messageType,
                 content = message.content,
                 sentAt = message.sentAt
