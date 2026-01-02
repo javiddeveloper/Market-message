@@ -3,6 +3,7 @@ package xyz.sattar.javid.marketmessage.data.local
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import xyz.sattar.javid.marketmessage.domain.model.DraftContact
 
 object MessageDraftDataHolder {
     private val _messageBody = MutableStateFlow("")
@@ -11,7 +12,7 @@ object MessageDraftDataHolder {
     private val _messageId = MutableStateFlow<Long?>(null)
     val messageId = _messageId.asStateFlow()
 
-    private val _selectedContacts = MutableStateFlow<List<String>>(emptyList())
+    private val _selectedContacts = MutableStateFlow<List<DraftContact>>(emptyList())
     val selectedContacts = _selectedContacts.asStateFlow()
 
     fun updateMessageBody(body: String) {
@@ -22,12 +23,24 @@ object MessageDraftDataHolder {
         _messageId.value = id
     }
 
-    fun toggleContactSelection(contact: String) {
+    fun toggleContactSelection(contact: DraftContact) {
         _selectedContacts.update { currentList ->
-            if (currentList.contains(contact)) {
-                currentList - contact
+            if (currentList.any { it.phoneNumber == contact.phoneNumber }) {
+                currentList.filter { it.phoneNumber != contact.phoneNumber }
             } else {
                 currentList + contact
+            }
+        }
+    }
+
+    fun updateContactName(phoneNumber: String, newName: String) {
+        _selectedContacts.update { currentList ->
+            currentList.map {
+                if (it.phoneNumber == phoneNumber) {
+                    it.copy(name = newName)
+                } else {
+                    it
+                }
             }
         }
     }
