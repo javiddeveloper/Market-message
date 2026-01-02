@@ -1,9 +1,8 @@
 package xyz.sattar.javid.marketmessage.domain.model
 
-data class Message(
-    val id: Long,
-    val customerId: Long,
+data class RecentMessageStat(
     val messageType: String,
     val content: String,
-    val sentAt: Long,
+    val count: Int,
+    val lastSent: Long
 )
