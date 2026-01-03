@@ -17,7 +17,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.AlertDialog
@@ -53,6 +52,7 @@ import kotlinx.coroutines.launch
 import xyz.sattar.javid.marketmessage.domain.model.Customer
 import xyz.sattar.javid.marketmessage.ui.components.AppButton
 import xyz.sattar.javid.marketmessage.ui.components.AppToolbar
+import xyz.sattar.javid.marketmessage.ui.home.EmptyStateText
 import xyz.sattar.javid.marketmessage.ui.home.RecentMessageItem
 import xyz.sattar.javid.marketmessage.ui.messages.components.MessagesContactItem
 import xyz.sattar.javid.marketmessage.ui.theme.MarketMessageTheme
@@ -93,7 +93,7 @@ fun MessagesScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Edit, contentDescription = "ایجاد پیام جدید")
+                Icon(Icons.Default.Add, contentDescription = "ایجاد پیام جدید")
             }
         }
     ) { innerPadding ->
@@ -152,40 +152,46 @@ fun MessagesScreen(
                 when (page) {
                     0 -> {
                         if (customerStats != null) {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                items(count = customerStats.itemCount) { index ->
-                                    val item = customerStats[index]
-                                    if (item != null) {
-                                        MessagesContactItem(
-                                            stats = item,
-                                            onEditClick = {
-                                                editingCustomer = item.customer
-                                                editedName = item.customer.editFullName ?: item.customer.fullName ?: ""
-                                            },
-                                            onDeleteClick = {
-                                                deletingCustomer = item.customer
-                                            }
-                                        )
-                                    }
+                            if (customerStats.itemCount == 0) {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    EmptyStateText("هنوز مخاطبی در این بخش ندارید. با دکمه + پایین صفحه مخاطب جدید اضافه کنید.")
                                 }
-                                
-                                customerStats.apply {
-                                    when {
-                                        loadState.refresh is LoadState.Loading -> {
-                                            item { 
-                                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                                    CircularProgressIndicator() 
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    items(count = customerStats.itemCount) { index ->
+                                        val item = customerStats[index]
+                                        if (item != null) {
+                                            MessagesContactItem(
+                                                stats = item,
+                                                onEditClick = {
+                                                    editingCustomer = item.customer
+                                                    editedName = item.customer.editFullName ?: item.customer.fullName ?: ""
+                                                },
+                                                onDeleteClick = {
+                                                    deletingCustomer = item.customer
+                                                }
+                                            )
+                                        }
+                                    }
+                                    
+                                    customerStats.apply {
+                                        when {
+                                            loadState.refresh is LoadState.Loading -> {
+                                                item { 
+                                                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                                        CircularProgressIndicator() 
+                                                    }
                                                 }
                                             }
-                                        }
-                                        loadState.append is LoadState.Loading -> {
-                                            item { 
-                                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                                    CircularProgressIndicator() 
+                                            loadState.append is LoadState.Loading -> {
+                                                item { 
+                                                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                                        CircularProgressIndicator() 
+                                                    }
                                                 }
                                             }
                                         }
@@ -200,31 +206,37 @@ fun MessagesScreen(
                     }
                     1 -> {
                         if (recentMessages != null) {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                items(count = recentMessages.itemCount) { index ->
-                                    val item = recentMessages[index]
-                                    if (item != null) {
-                                        RecentMessageItem(message = item)
-                                    }
+                            if (recentMessages.itemCount == 0) {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    EmptyStateText("هنوز پیامی ارسال نکرده‌اید. با دکمه + پایین صفحه اولین پیام‌تان را ارسال کنید.")
                                 }
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    items(count = recentMessages.itemCount) { index ->
+                                        val item = recentMessages[index]
+                                        if (item != null) {
+                                            RecentMessageItem(message = item)
+                                        }
+                                    }
 
-                                recentMessages.apply {
-                                    when {
-                                        loadState.refresh is LoadState.Loading -> {
-                                            item { 
-                                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                                    CircularProgressIndicator() 
+                                    recentMessages.apply {
+                                        when {
+                                            loadState.refresh is LoadState.Loading -> {
+                                                item { 
+                                                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                                        CircularProgressIndicator() 
+                                                    }
                                                 }
                                             }
-                                        }
-                                        loadState.append is LoadState.Loading -> {
-                                            item { 
-                                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                                    CircularProgressIndicator() 
+                                            loadState.append is LoadState.Loading -> {
+                                                item { 
+                                                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                                        CircularProgressIndicator() 
+                                                    }
                                                 }
                                             }
                                         }

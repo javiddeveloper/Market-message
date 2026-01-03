@@ -61,7 +61,7 @@ fun AppCard(
         ),
         border = BorderStroke(1.dp, borderColor),
         content = {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 content()
             }
         }

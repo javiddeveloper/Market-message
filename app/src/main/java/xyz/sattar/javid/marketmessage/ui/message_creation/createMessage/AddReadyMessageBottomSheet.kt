@@ -38,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalFocusManager
 import xyz.sattar.javid.marketmessage.domain.model.MessageVariable
 import xyz.sattar.javid.marketmessage.ui.components.AppButton
 import xyz.sattar.javid.marketmessage.ui.components.AppTextField
@@ -49,8 +48,7 @@ fun AddReadyMessageBottomSheet(
     onDismiss: () -> Unit,
     onSave: (String) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(
-    )
+    val sheetState = rememberModalBottomSheetState()
     var messageContent by remember { mutableStateOf("") }
     
     val previewText by remember {
@@ -60,7 +58,7 @@ fun AddReadyMessageBottomSheet(
     }
 
     ModalBottomSheet(
-        onDismissRequest = {},
+        onDismissRequest = onDismiss,
         sheetState = sheetState
     ) {
         Column(
@@ -116,9 +114,8 @@ fun AddReadyMessageBottomSheet(
                     label = "متن پیام",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp), // Approximate 3 lines height
+                        .height(120.dp),
                     maxLines = 5,
-
                 )
             }
 

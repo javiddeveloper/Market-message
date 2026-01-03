@@ -13,7 +13,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import xyz.sattar.javid.marketmessage.domain.model.ReadyMessage
 import xyz.sattar.javid.marketmessage.ui.components.AppToolbar
+import xyz.sattar.javid.marketmessage.ui.home.EmptyStateText
 import xyz.sattar.javid.marketmessage.ui.theme.MarketMessageTheme
 import xyz.sattar.javid.marketmessage.utils.collectWithLifecycleAware
 
@@ -100,14 +100,12 @@ fun CreateMessageContent(
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (uiState.readyMessages.isEmpty()) {
-                Text(
-                    text = "پیامی یافت نشد",
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-
-// ...
-
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    EmptyStateText("هنوز پیام آماده‌ای ندارید. با دکمه + پایین صفحه پیام آماده جدید اضافه کنید.")
+                }
             } else {
                 LazyColumn(
                     modifier = Modifier

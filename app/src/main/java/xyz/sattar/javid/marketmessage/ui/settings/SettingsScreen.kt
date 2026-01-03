@@ -17,12 +17,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -42,8 +39,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -52,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import xyz.sattar.javid.marketmessage.R
 import xyz.sattar.javid.marketmessage.domain.model.AppThemeMode
+import xyz.sattar.javid.marketmessage.ui.components.AppCard
+import xyz.sattar.javid.marketmessage.ui.components.AppCardType
 import xyz.sattar.javid.marketmessage.ui.components.AppToolbar
 import xyz.sattar.javid.marketmessage.ui.components.utils.IntentUtils
 
@@ -127,10 +126,7 @@ fun SettingsScreen(
             ) {
                 // General Settings Section
                 SettingsSection(title = "تنظیمات عمومی") {
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
+                    AppCard(type = AppCardType.SURFACE) {
                         SettingsItem(
                             icon = Icons.Default.Palette,
                             title = "تم و ظاهر",
@@ -147,10 +143,7 @@ fun SettingsScreen(
 
                 // Contact Us Section
                 SettingsSection(title = "ارتباط با ما") {
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
+                    AppCard(type = AppCardType.SURFACE) {
                         SettingsItem(
                             icon = Icons.Default.Info,
                             title = "تماس با ما",
@@ -296,7 +289,7 @@ fun SettingsItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
